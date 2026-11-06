@@ -114,7 +114,7 @@
                         <img src="https://placehold.co/400x500/e2e8f0/475569?text=Image+de+vacances\n(Simulation)" alt="Placeholder" class="w-full h-full object-cover">
                         
                         <!-- Floating Download Button -->
-                        <button onclick="triggerSuccess()" class="absolute bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full shadow-lg flex justify-center items-center text-white hover:bg-green-600 active:scale-95 transition transform">
+                        <button onclick="triggerSuccess('image')" class="absolute bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full shadow-lg flex justify-center items-center text-white hover:bg-green-600 active:scale-95 transition transform">
                             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         </button>
                     </div>
@@ -142,7 +142,7 @@
                         <div id="dropdown-menu" class="dropdown absolute top-12 right-2 bg-white text-gray-800 w-48 rounded-lg shadow-xl py-2 z-30 border border-gray-100">
                             <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Rechercher</button>
                             <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Envoyer le fichier...</button>
-                            <button onclick="triggerSuccess(); toggleDropdown()" class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200 font-medium text-blue-600">Enregistrer une copie</button>
+                            <button onclick="triggerSuccess('document'); toggleDropdown()" class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200 font-medium text-blue-600">Enregistrer une copie</button>
                             <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Imprimer</button>
                         </div>
                     </div>
@@ -248,7 +248,7 @@
                         <hr class="mb-2">
                         <!-- System Actions -->
                         <div class="space-y-1">
-                            <button onclick="triggerSuccess(); toggleBottomSheet()" class="w-full flex items-center p-3 hover:bg-gray-100 rounded-lg active:bg-gray-200 transition">
+                            <button onclick="triggerSuccess('partage'); toggleBottomSheet()" class="w-full flex items-center p-3 hover:bg-gray-100 rounded-lg active:bg-gray-200 transition">
                                 <svg class="w-6 h-6 text-gray-600 mr-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                                 <span class="text-sm font-medium">Enregistrer dans l'appareil</span>
                             </button>
@@ -344,9 +344,43 @@
             }
         });
 
+        // Fonction pour déclencher un VRAI téléchargement
+        function downloadRealFile(filename, url) {
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            // Libérer la mémoire si c'est un Blob URL
+            if (url.startsWith('blob:')) {
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+            }
+        }
+
         // Success Sequence (Toast -> Success Overlay)
-        function triggerSuccess() {
-            // Show Toast
+        function triggerSuccess(fileType) {
+            // --- Déclenchement du vrai téléchargement selon le scénario ---
+            if (fileType === 'image') {
+                // Petite image PNG valide encodée en Base64
+                const dataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+                downloadRealFile('image_atelier.png', dataUri);
+            } else if (fileType === 'document') {
+                // Génération d'un document texte via Blob
+                const textContent = "Félicitations, vous avez réussi à télécharger ce document !\n\nCeci valide votre manipulation dans l'exercice des 3 petits points.";
+                const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                downloadRealFile('document_formation.txt', url);
+            } else if (fileType === 'partage') {
+                // Génération d'un document texte pour le scénario de partage
+                const textContent = "Planning de collecte des déchets\n\nFélicitations ! Vous savez maintenant utiliser le bouton partager pour télécharger ou enregistrer un fichier.";
+                const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                downloadRealFile('planning_collecte.txt', url);
+            }
+
+            // Show Toast (animation simulateur)
             const toast = document.getElementById('toast');
             toast.classList.add('show');
             
