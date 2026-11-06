@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur Android - Apprendre à télécharger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for animations and specific UI elements */
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; margin: 0; }
+        
+        /* Smooth fade and slide transitions */
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .screen.active { display: flex; opacity: 1; }
+        
+        .bottom-sheet { transform: translateY(100%); transition: transform 0.3s ease-in-out; }
+        .bottom-sheet.open { transform: translateY(0); }
+        
+        .dropdown { opacity: 0; pointer-events: none; transform: scale(0.95); transition: all 0.2s ease; transform-origin: top right; }
+        .dropdown.open { opacity: 1; pointer-events: auto; transform: scale(1); }
+        
+        .backdrop { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .backdrop.open { opacity: 1; pointer-events: auto; }
+        
+        .toast { transform: translate(-50%, 100%); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        
+        /* Custom scrollbar for realistic look */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+
+    <!-- Phone Container -->
+    <div class="w-full max-w-[360px] h-[720px] max-h-[90vh] bg-white rounded-[2.5rem] shadow-2xl relative flex flex-col border-[12px] border-gray-900 overflow-hidden ring-1 ring-gray-300">
+        
+        <!-- Status Bar -->
+        <div class="h-6 bg-white w-full flex justify-between items-center px-4 text-[10px] font-medium text-gray-800 z-50 absolute top-0 left-0">
+            <span id="clock">12:00</span>
+            <div class="flex space-x-1 items-center">
+                <!-- Wifi -->
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.95 3 4.21 4.34 1.2 6.6L12 21.5 22.8 6.6C19.79 4.34 16.05 3 12 3zm0 2c3.34 0 6.43 1.15 8.92 3.16L12 19.3 3.08 8.16C5.57 6.15 8.66 5 12 5z"/></svg>
+                <!-- Signal -->
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M2 22h20V2z"/></svg>
+                <!-- Battery -->
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 w-full h-full pt-6 relative overflow-hidden bg-gray-50 flex flex-col">
+            
+            <!-- MAIN MENU SCREEN -->
+            <div id="screen-menu" class="screen active flex-col w-full h-full overflow-y-auto">
+                <div class="bg-blue-600 text-white p-6 pb-8 shadow-md rounded-b-3xl">
+                    <h1 class="text-2xl font-bold mb-1">Simulateur Android</h1>
+                    <p class="text-blue-100 text-sm">Apprenez à enregistrer des fichiers</p>
+                </div>
+                
+                <div class="p-4 flex-1 flex flex-col space-y-4 mt-2">
+                    <h2 class="text-gray-700 font-semibold text-sm uppercase tracking-wider mb-2 px-2">Choisissez une leçon</h2>
+                    
+                    <!-- Card 1 -->
+                    <button onclick="navTo('screen-sc1')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:bg-gray-50 active:bg-gray-100 transition text-left">
+                        <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex justify-center items-center shrink-0">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">1. Téléchargement direct</h3>
+                            <p class="text-xs text-gray-500 mt-1">Le bouton flèche classique</p>
+                        </div>
+                    </button>
+
+                    <!-- Card 2 -->
+                    <button onclick="navTo('screen-sc2')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:bg-gray-50 active:bg-gray-100 transition text-left">
+                        <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex justify-center items-center shrink-0">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">2. Les 3 petits points</h3>
+                            <p class="text-xs text-gray-500 mt-1">Menu déroulant d'un document</p>
+                        </div>
+                    </button>
+
+                    <!-- Card 3 -->
+                    <button onclick="navTo('screen-sc3')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:bg-gray-50 active:bg-gray-100 transition text-left">
+                        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center shrink-0">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">3. Le bouton Partager</h3>
+                            <p class="text-xs text-gray-500 mt-1">Depuis un réseau social</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCENARIO 1: Direct Download -->
+            <div id="screen-sc1" class="screen flex-col w-full h-full bg-white">
+                <!-- Header -->
+                <div class="h-14 flex items-center px-2 bg-gray-800 text-white shadow-md relative z-10">
+                    <button onclick="navTo('screen-menu')" class="p-2 rounded-full hover:bg-gray-700 active:bg-gray-600">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    </button>
+                    <span class="ml-2 font-medium text-lg">Galerie Web</span>
+                </div>
+                <!-- Content -->
+                <div class="flex-1 flex flex-col p-4 overflow-y-auto">
+                    <p class="text-sm text-gray-600 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <strong>Mission :</strong> Téléchargez cette image en utilisant le bouton direct prévu à cet effet.
+                    </p>
+                    <div class="bg-gray-100 rounded-2xl overflow-hidden shadow-inner flex-1 flex flex-col relative">
+                        <img src="https://placehold.co/400x500/e2e8f0/475569?text=Image+de+vacances\n(Simulation)" alt="Placeholder" class="w-full h-full object-cover">
+                        
+                        <!-- Floating Download Button -->
+                        <button onclick="triggerSuccess()" class="absolute bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full shadow-lg flex justify-center items-center text-white hover:bg-green-600 active:scale-95 transition transform">
+                            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCENARIO 2: Kebab Menu -->
+            <div id="screen-sc2" class="screen flex-col w-full h-full bg-gray-100">
+                <!-- Header with Kebab Menu -->
+                <div class="h-14 flex items-center justify-between px-2 bg-red-600 text-white shadow-md relative z-20">
+                    <div class="flex items-center">
+                        <button onclick="navTo('screen-menu')" class="p-2 rounded-full hover:bg-red-700 active:bg-red-800">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        </button>
+                        <span class="ml-2 font-medium text-lg">Facture_Free.pdf</span>
+                    </div>
+                    
+                    <!-- Kebab Icon -->
+                    <div class="relative">
+                        <button onclick="toggleDropdown()" id="kebab-btn" class="p-2 rounded-full hover:bg-red-700 active:bg-red-800">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="dropdown absolute top-12 right-2 bg-white text-gray-800 w-48 rounded-lg shadow-xl py-2 z-30 border border-gray-100">
+                            <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Rechercher</button>
+                            <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Envoyer le fichier...</button>
+                            <button onclick="triggerSuccess(); toggleDropdown()" class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200 font-medium text-blue-600">Enregistrer une copie</button>
+                            <button class="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 active:bg-gray-200">Imprimer</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content (Fake PDF) -->
+                <div class="flex-1 p-4 overflow-y-auto" onclick="closeMenus()">
+                    <p class="text-sm text-gray-600 mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                        <strong>Mission :</strong> Ouvrez le menu avec les 3 petits points et trouvez l'option pour sauvegarder le document.
+                    </p>
+                    <div class="bg-white p-6 shadow-md rounded flex flex-col items-center h-[500px]">
+                        <h2 class="text-xl font-bold text-gray-800 mb-8 border-b-2 border-gray-800 w-full text-center pb-2">FACTURE</h2>
+                        <div class="w-full text-sm text-gray-600 space-y-4">
+                            <div class="flex justify-between"><span>Date:</span> <span>12/05/2026</span></div>
+                            <div class="flex justify-between"><span>N° Client:</span> <span>098765432</span></div>
+                            <hr>
+                            <div class="flex justify-between font-bold text-gray-800"><span>Abonnement Box</span> <span>29.99 €</span></div>
+                            <div class="flex justify-between"><span>TVA 20%</span> <span>6.00 €</span></div>
+                            <hr>
+                            <div class="flex justify-between text-lg font-bold text-red-600 mt-4"><span>TOTAL TTC</span> <span>35.99 €</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SCENARIO 3: Share Button -->
+            <div id="screen-sc3" class="screen flex-col w-full h-full bg-white relative">
+                <!-- Header -->
+                <div class="h-14 flex items-center px-2 bg-white text-gray-800 border-b border-gray-200 relative z-10">
+                    <button onclick="navTo('screen-menu')" class="p-2 rounded-full hover:bg-gray-100 active:bg-gray-200">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    </button>
+                    <span class="ml-2 font-bold text-lg">MySocial</span>
+                </div>
+                
+                <!-- Content (Fake Feed) -->
+                <div class="flex-1 overflow-y-auto pb-20">
+                    <p class="text-sm text-gray-600 m-4 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                        <strong>Mission :</strong> Utilisez l'icône de partage sous l'image pour ouvrir le menu et télécharger le fichier.
+                    </p>
+                    
+                    <div class="border-b border-gray-200 pb-4">
+                        <!-- Post Header -->
+                        <div class="flex items-center p-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-600 text-white flex justify-center items-center font-bold">M</div>
+                            <div class="ml-3">
+                                <h3 class="font-bold text-sm">Mairie de MaVille</h3>
+                                <p class="text-xs text-gray-500">Il y a 2 heures</p>
+                            </div>
+                        </div>
+                        <!-- Post Text -->
+                        <p class="px-4 text-sm mb-3">Voici le planning de la collecte des déchets pour le mois prochain ! Pensez à le télécharger.</p>
+                        <!-- Post Image -->
+                        <img src="https://placehold.co/400x300/f8fafc/64748b?text=Planning+Collecte" class="w-full h-auto" alt="Planning">
+                        
+                        <!-- Action Bar -->
+                        <div class="flex justify-between px-6 py-3 mt-2 border-t border-gray-100">
+                            <!-- Like -->
+                            <button class="text-gray-500 flex items-center space-x-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            </button>
+                            <!-- Comment -->
+                            <button class="text-gray-500 flex items-center space-x-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            </button>
+                            <!-- SHARE BUTTON -->
+                            <button onclick="toggleBottomSheet()" class="text-gray-800 flex items-center space-x-2 p-1 rounded hover:bg-gray-100 active:scale-95 transition">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backdrop Overlay -->
+                <div id="backdrop" onclick="closeMenus()" class="backdrop absolute inset-0 bg-black/50 z-30"></div>
+                
+                <!-- Bottom Sheet (Share Menu) -->
+                <div id="bottom-sheet" class="bottom-sheet absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] z-40 pb-6">
+                    <div class="flex justify-center pt-3 pb-2">
+                        <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    </div>
+                    <div class="px-6 py-4">
+                        <h4 class="text-lg font-bold mb-4">Partager via...</h4>
+                        <div class="grid grid-cols-4 gap-4 text-center mb-6">
+                            <!-- Fake Apps -->
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-green-500 text-white flex justify-center items-center mb-1"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+                                <span class="text-[10px] text-gray-600">Messages</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex justify-center items-center mb-1"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg></div>
+                                <span class="text-[10px] text-gray-600">Réseau</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-red-500 text-white flex justify-center items-center mb-1"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+                                <span class="text-[10px] text-gray-600">Email</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-200 text-gray-600 flex justify-center items-center mb-1"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></div>
+                                <span class="text-[10px] text-gray-600">Copier</span>
+                            </div>
+                        </div>
+                        <hr class="mb-2">
+                        <!-- System Actions -->
+                        <div class="space-y-1">
+                            <button onclick="triggerSuccess(); toggleBottomSheet()" class="w-full flex items-center p-3 hover:bg-gray-100 rounded-lg active:bg-gray-200 transition">
+                                <svg class="w-6 h-6 text-gray-600 mr-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                <span class="text-sm font-medium">Enregistrer dans l'appareil</span>
+                            </button>
+                            <button class="w-full flex items-center p-3 hover:bg-gray-100 rounded-lg active:bg-gray-200 transition">
+                                <svg class="w-6 h-6 text-gray-600 mr-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                                <span class="text-sm font-medium">Imprimer</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast Notification (Android style) -->
+            <div id="toast" class="toast absolute bottom-12 left-1/2 bg-gray-800/95 text-white text-sm px-6 py-3 rounded-full shadow-lg z-50 flex items-center whitespace-nowrap pointer-events-none">
+                <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Fichier téléchargé
+            </div>
+
+            <!-- Success Overlay (to return to menu) -->
+            <div id="success-overlay" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 hidden flex-col justify-center items-center p-6 text-center opacity-0 transition-opacity duration-300">
+                <div class="w-20 h-20 bg-green-100 text-green-500 rounded-full flex justify-center items-center mb-6">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Bravo !</h2>
+                <p class="text-gray-600 mb-8">Vous avez réussi à télécharger le fichier avec succès.</p>
+                <button onclick="navTo('screen-menu')" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 active:scale-95 transition transform">
+                    Retour au menu
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Real-time fake clock for status bar
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Navigation logic
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(el => {
+                el.classList.remove('active');
+            });
+            closeMenus();
+            hideSuccessOverlay();
+        }
+
+        function navTo(screenId) {
+            hideAllScreens();
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Scenario 2: Dropdown Logic
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('open');
+        }
+
+        // Scenario 3: Bottom Sheet Logic
+        function toggleBottomSheet() {
+            const sheet = document.getElementById('bottom-sheet');
+            const backdrop = document.getElementById('backdrop');
+            
+            if (sheet.classList.contains('open')) {
+                sheet.classList.remove('open');
+                backdrop.classList.remove('open');
+            } else {
+                sheet.classList.add('open');
+                backdrop.classList.add('open');
+            }
+        }
+
+        function closeMenus() {
+            document.getElementById('dropdown-menu').classList.remove('open');
+            document.getElementById('bottom-sheet').classList.remove('open');
+            document.getElementById('backdrop').classList.remove('open');
+        }
+
+        // Global click listener to close dropdowns if clicked outside (Scenario 2)
+        document.addEventListener('click', function(event) {
+            const kebabBtn = document.getElementById('kebab-btn');
+            const dropdown = document.getElementById('dropdown-menu');
+            
+            // If click is outside the kebab button and the dropdown is open
+            if (dropdown.classList.contains('open') && event.target.closest('#kebab-btn') === null) {
+                closeMenus();
+            }
+        });
+
+        // Success Sequence (Toast -> Success Overlay)
+        function triggerSuccess() {
+            // Show Toast
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            
+            // After 2.5 seconds, hide toast and show success overlay
+            setTimeout(() => {
+                toast.classList.remove('show');
+                showSuccessOverlay();
+            }, 2000);
+        }
+
+        function showSuccessOverlay() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            // Small delay to allow display:flex to apply before changing opacity for animation
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                overlay.classList.add('opacity-100');
+            }, 50);
+        }
+
+        function hideSuccessOverlay() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('opacity-100');
+            overlay.classList.add('opacity-0');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
